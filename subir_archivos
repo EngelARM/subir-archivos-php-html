@@ -1,0 +1,44 @@
+//es un ejemplo sencillo solo para demostrar el uso de php para guardar archivos a una base de datos
+//(lo que importa mas es el codigo php)
+
+<html>
+<head></head>
+<body>
+<form name="FormDatos" enctype="multipart/form-data" method="post">
+<input type="file" name="foto" id="file" class="input-file"> 
+</form>
+</body>
+</html>
+  
+  <?php
+  $nomb_carpeta="eventos_comprobantes/";//nombre de la carpeta donde se guardaran los archivos
+  $destino="";
+  if(!is_dir("images/".$nomb_carpeta)){//se comprueba si no existe la carpeta en la ruta - en caso de no existir dicha carpeta, sera creada
+      @mkdir("images/".$nomb_carpeta);
+  }
+  if($_FILES["foto"]["name"]){//se comprueba si hay archivo a subir
+      if(file_exists('images/'.$nomb_carpeta.$_FILES["foto"]["name"])){//verificamos si el archivo ya esta guardado en la carpeta
+          unlink('images/eventos_comprobantes/'.$_FILES["foto"]["name"]);//eliminamos dicho archivo que ya se encontraba subido
+      }
+  }else{
+  echo "no hay archivo a subir";
+  return;//detenemos todo el codigo puesto que no hay archivo a subir
+  }
+  if($_FILES['foto']['error']){//volvemos a comprobar si el archivo a subir no existe o no es reconocible
+      echo" <b>No se encontro el archivo a subir.</b>";
+  }else{
+      $destino = "Comprobante_".$_FILES["foto"]["name"];//aqui renombramos el archivo a subir
+      if( copy($_FILES["foto"]["tmp_name"], "images/".$nomb_carpeta.$destino ) ){//copiamos el archivo ya renombrado a la ruta especificada anteriormente
+          echo" <b>Se ha guardado el archivo</b> ".$_FILES["foto"]["name"]." <b>correctamente.</b>";
+      }else{//error si no se pudo copiar el archivo
+          echo "no se pudo copiar el archivo";
+      }
+  }
+  //procedemos a guardar los datos donde utilizaremos la variable $destino para guardarlo en la base de datos
+  $query="INSERT INTO comprobantes(id, nombre_comprobante, foto) VALUES(58,'comprobante ejemplo','$destino')";
+  if(mysqli_query(connectSql(),$query)){
+    echo "se guardo correctamente";
+  }else{
+    echo "no se pudo guardar la informacion a la base de datos";
+  }
+  ?>
